@@ -54,6 +54,14 @@
         title="健康诊断">
         🏥
       </button>
+      <button @click="handlePanelClick('duty')"
+        :style="{ width:'44px', height:'44px', borderRadius:'8px', border:'none', cursor:'pointer',
+          background: activePanel === 'duty' ? '#fff' : 'transparent',
+          color: activePanel === 'duty' ? '#1b5e20' : '#fff',
+          fontSize:'18px', display:'flex', alignItems:'center', justifyContent:'center' }"
+        :title="`值班与交接（当前：${dutyStore.roleLabel}）`">
+        🧑‍✈️
+      </button>
       <hr style="width:36px;border-color:rgba(255,255,255,0.2);margin:8px 0"/>
       <button @click="handleAddDevice"
         :style="{ width:'44px', height:'44px', borderRadius:'8px', border:'none', cursor:'pointer',
@@ -79,6 +87,7 @@
     <AlarmCenter v-if="activePanel === 'alarms' && !store.isRegisteringDevice" />
     <TrackPlayer v-if="activePanel === 'track' && !store.isRegisteringDevice" @close="handleTrackClose" />
     <DeviceHealthDiagnosis v-if="activePanel === 'health' && !store.isRegisteringDevice" />
+    <DutyCenter v-if="activePanel === 'duty' && !store.isRegisteringDevice" />
   </div>
 </template>
 
@@ -92,13 +101,17 @@ import DeviceRegistration from './components/DeviceRegistration.vue';
 import TrackPlayer from './components/TrackPlayer.vue';
 import MonitorDashboard from './components/MonitorDashboard.vue';
 import DeviceHealthDiagnosis from './components/DeviceHealthDiagnosis.vue';
+import DutyCenter from './components/DutyCenter.vue';
 import { useIotStore } from './stores/iot';
+import { useDutyStore } from './stores/duty';
 
 const store = useIotStore();
-const activePanel = ref<'devices' | 'fences' | 'alarms' | 'track' | 'health'>('alarms');
+const dutyStore = useDutyStore();
+dutyStore.init();
+const activePanel = ref<'devices' | 'fences' | 'alarms' | 'track' | 'health' | 'duty'>('alarms');
 const isDashboardMode = ref(false);
 
-function handlePanelClick(panel: 'devices' | 'fences' | 'alarms' | 'track' | 'health') {
+function handlePanelClick(panel: 'devices' | 'fences' | 'alarms' | 'track' | 'health' | 'duty') {
   if (activePanel.value === 'track' && panel !== 'track') {
     store.disableTrackPlayback();
   }

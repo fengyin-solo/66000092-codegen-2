@@ -130,3 +130,102 @@ export interface HealthSummary {
   mediumPriorityCount: number;
   lowPriorityCount: number;
 }
+
+// ===== 值班与交接 =====
+export type DutyRole = 'admin' | 'leader' | 'operator' | 'visitor';
+
+export interface DutyUser {
+  id: string;
+  name: string;
+  role: DutyRole;
+}
+
+export interface Shift {
+  id: string;
+  name: string;
+  leaderId: string;
+  startTime: string;
+  endTime: string;
+  status: 'ongoing' | 'closed';
+  version: number;
+  updatedBy: string;
+  updatedAt: string;
+}
+
+export type DutyItemStatus = 'pending' | 'in_progress' | 'done';
+
+export interface DutyItem {
+  id: string;
+  shiftId: string;
+  title: string;
+  detail: string;
+  assigneeId: string | null;
+  status: DutyItemStatus;
+  version: number;
+  updatedBy: string;
+  updatedAt: string;
+}
+
+export type HandoverStatus = 'pending' | 'completed';
+
+export interface CarryoverItem {
+  id: string;
+  title: string;
+  detail: string;
+  status: 'pending' | 'resolved';
+  confirmedBy: string | null;
+  confirmedAt: string | null;
+  version: number;
+  updatedBy: string;
+  updatedAt: string;
+}
+
+export interface Handover {
+  id: string;
+  shiftId: string;
+  fromShiftName: string;
+  summary: string;
+  status: HandoverStatus;
+  handoverTime: string | null;
+  carryovers: CarryoverItem[];
+  version: number;
+  updatedBy: string;
+  updatedAt: string;
+}
+
+export interface DutyState {
+  shifts: Shift[];
+  items: DutyItem[];
+  handovers: Handover[];
+}
+
+/** 字段级差异：用于并发冲突时展示冲突双方内容 */
+export interface FieldDiff {
+  field: string;
+  label: string;
+  base: string;
+  yours: string;
+  theirs: string;
+}
+
+export interface DutyConflict {
+  code: 'conflict';
+  message: string;
+  entity: 'shift' | 'item' | 'handover' | 'carryover';
+  id: string;
+  server: Shift | DutyItem | Handover | CarryoverItem;
+  attempted: Record<string, unknown>;
+  diffs: FieldDiff[];
+}
+
+export interface DutyForbidden {
+  code: 'forbidden';
+  message: string;
+  reason: string;
+}
+
+export type DutyResult<T> =
+  | { ok: true; data: T }
+  | DutyForbidden
+  | { code: 'invalid'; message: string }
+  | DutyConflict;
